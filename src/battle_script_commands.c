@@ -1017,6 +1017,8 @@ static bool8 AccuracyCalcHelper(u16 move)
 static void Cmd_accuracycheck(void)
 {
     u16 move = T2_READ_16(gBattlescriptCurrInstr + 5);
+    u16 rand;
+    u16 acc;
 
     if ((gBattleTypeFlags & BATTLE_TYPE_FIRST_BATTLE
         && !BtlCtrl_OakOldMan_TestState2Flag(1)
@@ -1116,11 +1118,11 @@ static void Cmd_accuracycheck(void)
             calc = (calc * (100 - param)) / 100;
 
         // final calculation
-        u16 rand = Random() & 0xFF;  // 0–255
-        u16 acc = (calc * 255) / 100;
+        rand = Random() & 0xFF;
+        acc = (calc * 255) / 100;
         if (acc > 255)
             acc = 255;
-        if ((rand >= acc)
+        if (rand >= acc)
         {
             gMoveResultFlags |= MOVE_RESULT_MISSED;
             if (gBattleTypeFlags & BATTLE_TYPE_DOUBLE
@@ -1201,7 +1203,7 @@ static void Cmd_critcalc(void)
 {
     u8 holdEffect;
     u16 item, critChance;
-    u32 gen3denominator, gen1denominator, effectivedenominator; // ADDED
+    u32 gen3Denominator, gen1Denominator, effectiveDenominator; // ADDED
     u16 baseSpeed; //added
 
     item = gBattleMons[gBattlerAttacker].item;
@@ -1780,12 +1782,15 @@ static void Cmd_waitanimation(void)
 
 static void Cmd_healthbarupdate(void)
 {
+    u16 oldHp; // add declaration
+
     if (gBattleControllerExecFlags)
         return;
 
     if (!(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
     {
         gActiveBattler = GetBattlerForBattleScript(gBattlescriptCurrInstr[1]);
+        oldHp = gBattleMons[gActiveBattler].hp;
 
         if (gBattleMons[gActiveBattler].status2 & STATUS2_SUBSTITUTE && gDisableStructs[gActiveBattler].substituteHP && !(gHitMarker & HITMARKER_IGNORE_SUBSTITUTE))
         {
@@ -2864,50 +2869,60 @@ void SetMoveEffect(bool8 primary, u8 certain)
 }
 
 static void Cmd_seteffectwithchance(void) //should prevent same-type status effects
-switch (gBattleCommunication[MOVE_EFFECT_BYTE])
 {
-    case MOVE_EFFECT_SLEEP:
-    case MOVE_EFFECT_POISON:
-    case MOVE_EFFECT_BURN:
-    case MOVE_EFFECT_FREEZE:
-    case MOVE_EFFECT_PARALYSIS:
-    case MOVE_EFFECT_TOXIC:
-    if (ismovetypestatusimmune(gCurrentMove, gBattlerTarget))
+    if (gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_SLEEP
+     || gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_POISON
+     || gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_BURN
+     || gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_FREEZE
+     || gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_PARALYSIS
+     || gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_TOXIC)
+     {
+        if ((gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_BURN
+             && IS_BATTLER_OF_TYPE(gBattlerTarget, TYPE_FIRE))
+         || (gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_FREEZE
+             && IS_BATTLER_OF_TYPE(gBattlerTarget, TYPE_ICE))
+         || (gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_PARALYSIS
+             && IS_BATTLER_OF_TYPE(gBattlerTarget, TYPE_ELECTRIC))
+         || ((gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_POISON
+              || gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_TOXIC)
+             && (IS_BATTLER_OF_TYPE(gBattlerTarget, TYPE_POISON)
+              || IS_BATTLER_OF_TYPE(gBattlerTarget, TYPE_ROCK))))
+        {
+            gBattlescriptCurrInstr++;
+            return;
+        }
+     }
     {
-        gBattlescriptCurrInstr++;
-        return;
-    }
-}
-{
-    u32 percentChance;
+        u32 percentChance;
 
-    if (gBattleMons[gBattlerAttacker].ability == ABILITY_SERENE_GRACE)
-        percentChance = gBattleMoves[gCurrentMove].secondaryEffectChance * 2;
-    else
-        percentChance = gBattleMoves[gCurrentMove].secondaryEffectChance;
-
-    if (gBattleCommunication[MOVE_EFFECT_BYTE] & MOVE_EFFECT_CERTAIN
-        && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
-    {
-        gBattleCommunication[MOVE_EFFECT_BYTE] &= ~MOVE_EFFECT_CERTAIN;
-        SetMoveEffect(FALSE, MOVE_EFFECT_CERTAIN);
-    }
-    else if (Random() % 100 <= percentChance
-             && gBattleCommunication[MOVE_EFFECT_BYTE]
-             && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
-    {
-        if (percentChance >= 100)
-            SetMoveEffect(FALSE, MOVE_EFFECT_CERTAIN);
+        if (gBattleMons[gBattlerAttacker].ability == ABILITY_SERENE_GRACE)
+            percentChance = gBattleMoves[gCurrentMove].secondaryEffectChance * 2;
         else
-            SetMoveEffect(FALSE, 0);
-    }
-    else
-    {
-        gBattlescriptCurrInstr++;
-    }
+            percentChance = gBattleMoves[gCurrentMove].secondaryEffectChance;
 
-    gBattleCommunication[MOVE_EFFECT_BYTE] = 0;
-    gBattleScripting.multihitMoveEffect = 0;
+        if (gBattleCommunication[MOVE_EFFECT_BYTE] & MOVE_EFFECT_CERTAIN
+            && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
+        {
+            gBattleCommunication[MOVE_EFFECT_BYTE] &= ~MOVE_EFFECT_CERTAIN;
+            SetMoveEffect(FALSE, MOVE_EFFECT_CERTAIN);
+        }
+        else if (Random() % 100 <= percentChance
+                 && gBattleCommunication[MOVE_EFFECT_BYTE]
+                 && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
+        {
+            if (percentChance >= 100)
+                SetMoveEffect(FALSE, MOVE_EFFECT_CERTAIN);
+            else
+                SetMoveEffect(FALSE, 0);
+        }
+        else
+        {
+            gBattlescriptCurrInstr++;
+        }
+
+        gBattleCommunication[MOVE_EFFECT_BYTE] = 0;
+        gBattleScripting.multihitMoveEffect = 0;
+    }
 }
 
 static void Cmd_seteffectprimary(void) 
@@ -2916,22 +2931,34 @@ static void Cmd_seteffectprimary(void)
 }
 
 static void Cmd_seteffectsecondary(void) //should prevent same-type status effects
-switch (gBattleCommunication[MOVE_EFFECT_BYTE])
 {
-    case MOVE_EFFECT_SLEEP:
-    case MOVE_EFFECT_POISON:
-    case MOVE_EFFECT_BURN:
-    case MOVE_EFFECT_FREEZE:
-    case MOVE_EFFECT_PARALYSIS:
-    case MOVE_EFFECT_TOXIC:
-    if (ismovetypestatusimmune(gCurrentMove, gBattlerTarget))
+    switch (gBattleCommunication[MOVE_EFFECT_BYTE])
     {
-        gBattlescriptCurrInstr++;
-        return;
+        case MOVE_EFFECT_SLEEP:
+        case MOVE_EFFECT_POISON:
+        case MOVE_EFFECT_BURN:
+        case MOVE_EFFECT_FREEZE:
+        case MOVE_EFFECT_PARALYSIS:
+        case MOVE_EFFECT_TOXIC:
+        if ((gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_BURN
+                 && IS_BATTLER_OF_TYPE(gBattlerTarget, TYPE_FIRE))
+             || (gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_FREEZE
+                 && IS_BATTLER_OF_TYPE(gBattlerTarget, TYPE_ICE))
+             || (gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_PARALYSIS
+                 && IS_BATTLER_OF_TYPE(gBattlerTarget, TYPE_ELECTRIC))
+             || ((gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_POISON
+                  || gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_TOXIC)
+                 && (IS_BATTLER_OF_TYPE(gBattlerTarget, TYPE_POISON)
+                  || IS_BATTLER_OF_TYPE(gBattlerTarget, TYPE_ROCK))))
+            {
+                gBattlescriptCurrInstr++;
+                return;
+            }
+            break;
     }
-}
-{
-    SetMoveEffect(FALSE, 0);
+    {
+        SetMoveEffect(FALSE, 0);
+    }
 }
 
 static void Cmd_clearstatusfromeffect(void)
@@ -6971,12 +6998,6 @@ static void Cmd_statbuffchange(void)
     const u8 *jumpPtr = T1_READ_PTR(gBattlescriptCurrInstr + 2);
     if (ChangeStatBuffs(gBattleScripting.statChanger & 0xF0, GET_STAT_BUFF_ID(gBattleScripting.statChanger), gBattlescriptCurrInstr[1], jumpPtr) == STAT_CHANGE_WORKED)
         gBattlescriptCurrInstr += 6;
-    if (statId == STAT_SPATK)
-        gBattleMons[gBattlerTarget].statStages[STAT_SPDEF] =
-        gBattleMons[gBattlerTarget].statStages[STAT_SPATK];
-    if (statId == STAT_SPDEF)
-        gBattleMons[gBattlerTarget].statStages[STAT_SPATK] =
-        gBattleMons[gBattlerTarget].statStages[STAT_SPDEF];
 }
 
 // Haze
@@ -7179,42 +7200,14 @@ static void Cmd_tryconversiontypechange(void)
     // Prepare the type name for the battle message — use type1 as the primary display type
     PREPARE_TYPE_BUFFER(gBattleTextBuff1, targetType1);  // unchanged — buff1 = type1
     if (targetType2 != targetType1)
+    {
         PREPARE_TYPE_BUFFER(gBattleTextBuff2, targetType2);
+    }
     else
+    {
         gBattleTextBuff2[0] = B_BUFF_EOS;  // empty second buffer
-
+    }
     gBattlescriptCurrInstr += 5;
-}
-
-    if (moveChecked == validMoves)
-    {
-        gBattlescriptCurrInstr = T1_READ_PTR(gBattlescriptCurrInstr + 1);
-    }
-    else
-    {
-        do
-        {
-            while ((moveChecked = Random() & (MAX_MON_MOVES - 1)) >= validMoves);
-
-            moveType = gBattleMoves[gBattleMons[gBattlerAttacker].moves[moveChecked]].type;
-
-            if (moveType == TYPE_MYSTERY)
-            {
-                if (IS_BATTLER_OF_TYPE(gBattlerAttacker, TYPE_GHOST))
-                    moveType = TYPE_GHOST;
-                if (IS_BATTLER_OF_TYPE(gBattlerAttacker, TYPE_FIGHTING))
-                    moveType = TYPE_FIGHTING;
-                else
-                    moveType = TYPE_NORMAL;
-            }
-        }
-        while (moveType == gBattleMons[gBattlerAttacker].type1 || moveType == gBattleMons[gBattlerAttacker].type2);
-
-        SET_BATTLER_TYPE(gBattlerAttacker, moveType);
-        PREPARE_TYPE_BUFFER(gBattleTextBuff1, moveType);
-
-        gBattlescriptCurrInstr += 5;
-    }
 }
 
 static void Cmd_givepaydaymoney(void)

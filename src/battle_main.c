@@ -3201,13 +3201,13 @@ static void HandleTurnActionSelectionState(void)
                     {
                         BtlController_EmitChoosePokemon(BUFFER_A, PARTY_ACTION_CANT_SWITCH, 6, ABILITY_NONE, gBattleStruct->battlerPartyOrders[gActiveBattler]);
                     }
-                    else if (gBattleMons[gActiveBattler].ability != ABILITY_RUN_AWAY  // ADD
-                            && ((i = ABILITY_ON_OPPOSING_FIELD(gActiveBattler, ABILITY_SHADOW_TAG))
-                            || ((i = ABILITY_ON_OPPOSING_FIELD(gActiveBattler, ABILITY_ARENA_TRAP))
-                              && !IS_BATTLER_OF_TYPE(gActiveBattler, TYPE_FLYING)
-                              && gBattleMons[gActiveBattler].ability != ABILITY_LEVITATE)
-                            || ((i = AbilityBattleEffects(ABILITYEFFECT_CHECK_FIELD_EXCEPT_BATTLER, gActiveBattler, ABILITY_MAGNET_PULL, 0, 0))
-                              && IS_BATTLER_OF_TYPE(gActiveBattler, TYPE_ELECTRIC || TYPE_ROCK)))
+                    else if (gBattleMons[gActiveBattler].ability != ABILITY_RUN_AWAY
+                        && ((i = ABILITY_ON_OPPOSING_FIELD(gActiveBattler, ABILITY_SHADOW_TAG))
+                        || ((i = ABILITY_ON_OPPOSING_FIELD(gActiveBattler, ABILITY_ARENA_TRAP))
+                          && !IS_BATTLER_OF_TYPE(gActiveBattler, TYPE_FLYING)
+                          && gBattleMons[gActiveBattler].ability != ABILITY_LEVITATE)
+                        || ((i = AbilityBattleEffects(ABILITYEFFECT_CHECK_FIELD_EXCEPT_BATTLER, gActiveBattler, ABILITY_MAGNET_PULL, 0, 0))
+                          && (IS_BATTLER_OF_TYPE(gActiveBattler, TYPE_ELECTRIC) || IS_BATTLER_OF_TYPE(gActiveBattler,TYPE_ROCK)))))
                     {
                         BtlController_EmitChoosePokemon(BUFFER_A, ((i - 1) << 4) | PARTY_ACTION_ABILITY_PREVENTS, 6, gLastUsedAbility, gBattleStruct->battlerPartyOrders[gActiveBattler]);
                     }
@@ -3425,9 +3425,9 @@ u8 GetWhoStrikesFirst(u8 battler1, u8 battler2, bool8 ignoreChosenMoves)
     }
     
     // add vital spirit speed boost for both battlers
-    if (gBattleMons[battler1].ability == ABILITY_VITAL_SPIRIT && battler1->status1)
+    if (gBattleMons[battler1].ability == ABILITY_VITAL_SPIRIT && gBattleMons[battler1].status1)
         speedMultiplierBattler1 = 2;
-    if (gBattleMons[battler2].ability == ABILITY_VITAL_SPIRIT && battler2->status1)
+    if (gBattleMons[battler2].ability == ABILITY_VITAL_SPIRIT && gBattleMons[battler2].status1)
         speedMultiplierBattler2 = 2;
 
     // add speed doubling if Minus/Plus ally

@@ -1861,42 +1861,36 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
                     }
                 }
                 break;
-            case ABILITYEFFECT_HP_CHANGE:   // <-- ADD YOUR CODE HERE
-            {
-                u8 ability = gBattleMons[battler].ability;
-
-                if ((ability == ABILITY_BLAZE
-                  || ability == ABILITY_TORRENT
-                  || ability == ABILITY_OVERGROW
-                  || ability == ABILITY_SWARM)
-                  || ability == ABILITY_EARLY_BIRD
-                  || ability == ABILITY_ILLUMINATE
-                  || ability == ABILITY_STENCH
-
-                 && gBattleMons[battler].hp <= gBattleMons[battler].maxHP / 3
-                 && !(gStatuses3[battler] & STATUS3_LOW_HP_ABILITY_MSG))
-                 {
-                    gStatuses3[battler] |= STATUS3_LOW_HP_ABILITY_MSG;
-
-                    switch (ability)
+            case ABILITYEFFECT_HP_CHANGE:
+                {
+                    u8 ability = gBattleMons[battler].ability;
+                    if ((ability == ABILITY_BLAZE
+                      || ability == ABILITY_TORRENT
+                      || ability == ABILITY_OVERGROW
+                      || ability == ABILITY_SWARM
+                      || ability == ABILITY_EARLY_BIRD
+                      || ability == ABILITY_ILLUMINATE
+                      || ability == ABILITY_STENCH)
+                     && gBattleMons[battler].hp <= gBattleMons[battler].maxHP / 3
+                     && !(gStatuses3[battler] & STATUS3_LOW_HP_ABILITY_MSG))
                     {
-                        case ABILITY_OVERGROW: gBattleCommunication[MULTISTRING_CHOOSER] = 0; break;
-                        case ABILITY_BLAZE:    gBattleCommunication[MULTISTRING_CHOOSER] = 1; break;
-                        case ABILITY_TORRENT:  gBattleCommunication[MULTISTRING_CHOOSER] = 2; break;
-                        case ABILITY_SWARM:    gBattleCommunication[MULTISTRING_CHOOSER] = 3; break;
-                        case ABILITY_EARLY_BIRD:    gBattleCommunication[MULTISTRING_CHOOSER] = 4; break;
-                        case ABILITY_ILLUMINATE:    gBattleCommunication[MULTISTRING_CHOOSER] = 5; break;
-                        case ABILITY_STENCH:    gBattleCommunication[MULTISTRING_CHOOSER] = 6; break;
+                        gStatuses3[battler] |= STATUS3_LOW_HP_ABILITY_MSG;
+                        switch (ability)
+                        {
+                            case ABILITY_OVERGROW:   gBattleCommunication[MULTISTRING_CHOOSER] = 0; break;
+                            case ABILITY_BLAZE:      gBattleCommunication[MULTISTRING_CHOOSER] = 1; break;
+                            case ABILITY_TORRENT:    gBattleCommunication[MULTISTRING_CHOOSER] = 2; break;
+                            case ABILITY_SWARM:      gBattleCommunication[MULTISTRING_CHOOSER] = 3; break;
+                            case ABILITY_EARLY_BIRD: gBattleCommunication[MULTISTRING_CHOOSER] = 4; break;
+                            case ABILITY_ILLUMINATE: gBattleCommunication[MULTISTRING_CHOOSER] = 5; break;
+                            case ABILITY_STENCH:     gBattleCommunication[MULTISTRING_CHOOSER] = 6; break;
+                        }
+                        gBattlerAbility = battler;
+                        BattleScriptPushCursor();
+                        gBattlescriptCurrInstr = BattleScript_LowHpAbilityBoost;
+                        effect++;
                     }
-
-                    gBattlerAbility = battler;
-                    BattleScriptPushCursor();
-                    gBattlescriptCurrInstr = BattleScript_LowHpAbilityBoost;
-                    effect++;
-                 }
                 }
-                break;
-            }
             break;
         case ABILITYEFFECT_ENDTURN: // 1
             if (gBattleMons[battler].hp != 0)

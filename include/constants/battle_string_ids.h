@@ -397,15 +397,16 @@
 #define STRINGID_SWARMBOOSTED 392
 #define STRINGID_EARLYBIRDBOOSTED 393
 #define STRINGID_ILLUMINATEBOOSTED 394
+#define STRINGID_STENCHBOOSTED 395
 
 
 //add sturdy
-#define STRINGID_STURDY 395
+#define STRINGID_STURDY 396
 
 //add truant
-#define STRINGID_TRUANTRESTOREDHP 396
+#define STRINGID_TRUANTRESTOREDHP 397
 
-#define BATTLESTRINGS_COUNT     397
+#define BATTLESTRINGS_COUNT     398
 
 // This is the string id that gBattleStringsTable starts with.
 // String ids before this (e.g. STRINGID_INTROMSG) are not in the table,

@@ -921,10 +921,10 @@ const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT - BATTLESTRINGS_TABLE_ST
     [STRINGID_OVERGROWBOOSTED - BATTLESTRINGS_TABLE_START]               = sText_OvergrowBoosted,           
     [STRINGID_BLAZEBOOSTED - BATTLESTRINGS_TABLE_START]                   = sText_BlazeBoosted,               
     [STRINGID_TORRENTBOOSTED- BATTLESTRINGS_TABLE_START]                  = sText_TorrentBoosted,             
-    [STRINGID_SWARMBOOSTED - BATTLESTRINGS_TABLE_START] = sText_SwarmBoosted,,               
+    [STRINGID_SWARMBOOSTED - BATTLESTRINGS_TABLE_START] = sText_SwarmBoosted,               
     [STRINGID_EARLYBIRDBOOSTED - BATTLESTRINGS_TABLE_START] = sText_EarlyBirdBoosted,           
-    [STRINGID_ILLUMINATEBOOSTED - BATTLESTRINGS_TABLE_START] = sText_IlluminateBoosted
-    [STRINGID_STENCHBOOSTED - BATTLESTRINGS_TABLE_START] = sText_StenchBoosted
+    [STRINGID_ILLUMINATEBOOSTED - BATTLESTRINGS_TABLE_START] = sText_IlluminateBoosted,
+    [STRINGID_STENCHBOOSTED - BATTLESTRINGS_TABLE_START] = sText_StenchBoosted,
 
 };
 
